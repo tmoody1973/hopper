@@ -75,7 +75,8 @@ export function teaser(bill) {
 
 export function firstSentence(text) {
   const para = String(text ?? '').split('\n\n')[0];
-  const match = para.match(/^.+?[.!?](?=\s+[A-Z(]|$)/);
+  // (?<!…) skips initials like "U.S." so "the U.S. Fish and Wildlife Service" isn't cut at "U.S."
+  const match = para.match(/^.+?(?<!\b[A-Z]\.[A-Z])[.!?](?=\s+[A-Z(]|$)/);
   return (match ? match[0] : para).trim();
 }
 
