@@ -6,3 +6,6 @@ node_modules/
 .env*
 .remember/
 !.env.example
+video/node_modules/
+video/out/
+video/public/capture/

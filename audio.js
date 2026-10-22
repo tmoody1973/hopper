@@ -37,11 +37,16 @@ export function unlock() {
     master = ctx.createGain();
     master.gain.value = muted ? 0 : 0.55;
     master.connect(ctx.destination);
-    noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-    const data = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    noiseBuffer = makeNoise(ctx);
   }
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+}
+
+function makeNoise(context) {
+  const buffer = context.createBuffer(1, context.sampleRate, context.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  return buffer;
 }
 
 const ready = () => ctx !== null && !muted;
@@ -145,3 +150,22 @@ export const sfx = {
     tone({ type: 'sawtooth', freq: semis(233, -3), at: 0.96, dur: 1.1, vol: 0.12, vibrato: 6 });
   },
 };
+
+// Renders sounds into memory instead of the speakers (used to make the launch
+// video's audio from the game's own recipes). schedule() gets the same building
+// blocks the game uses; times are seconds from the start of the render.
+export async function renderOffline(seconds, schedule, sampleRate = 48000) {
+  const saved = { ctx, master, noiseBuffer, muted };
+  ctx = new OfflineAudioContext(1, Math.ceil(seconds * sampleRate), sampleRate);
+  master = ctx.createGain();
+  master.gain.value = 0.55;
+  master.connect(ctx.destination);
+  noiseBuffer = makeNoise(ctx);
+  muted = false;
+  try {
+    schedule({ tone, noise, semis, sfx });
+    return await ctx.startRendering();
+  } finally {
+    ({ ctx, master, noiseBuffer, muted } = saved);
+  }
+}

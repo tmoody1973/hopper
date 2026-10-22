@@ -35,3 +35,5 @@ Paste this into every brief. Add a line whenever a playtest accepts a behaviour.
 - Deploys: .vercelignore keeps .env*, scripts/, docs/, *.md and .remember/ off Vercel. After every deploy,
   https://hopper-rouge.vercel.app/.env.local must return 404. Refresh bills with `npm run refresh-bills`,
   then `vercel deploy --prod`.
+- ?capture=<scene> (capture.js) must keep working: seeded RNG, no real-time loop, step() per frame. The
+  launch video in video/ is re-recorded from it. video/ is never deployed (.vercelignore).

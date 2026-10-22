@@ -317,3 +317,11 @@ body.playing #hud { display: block; }
   .journey li.now::before { top: -2px; left: 1px; margin-left: 0; }
   .journey li::after { top: -14px; left: 10px; width: 4px; height: 100%; }
 }
+
+/* ── ?capture recording mode (launch video): clean frames, scripted cursor ── */
+body.capture { overflow: hidden; }
+body.capture .poster-ui, body.capture .poster::before, body.capture #hud, body.capture #page { display: none !important; }
+body.capture.playing .poster { inset: 0; }
+body.capture:not(.capture-ui) #overlay { display: none; }
+#capture-cursor { position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; display: none; }
+#capture-cursor svg { filter: drop-shadow(0 4px 3px rgba(43, 37, 64, 0.35)); }

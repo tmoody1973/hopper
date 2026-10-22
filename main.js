@@ -8,6 +8,19 @@ import { sfx, unlock, isMuted, setMuted } from './audio.js';
 import { initPage, setBills } from './page.js';
 import { billCard, teaser } from './learn.js';
 
+// ?capture=<scene> records the launch video: a seeded RNG so every recording is
+// identical, and no real-time loop (capture.js advances the game frame by frame).
+const CAPTURE = new URLSearchParams(location.search).get('capture');
+if (CAPTURE) {
+  let seed = Number(new URLSearchParams(location.search).get('seed')) || 7;
+  Math.random = () => { // mulberry32
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 // ─── Config ────────────────────────────────────────────────────────────────
 const CONFIG = {
   // Congress.gov API key. Get a free one at https://api.data.gov/signup/
@@ -639,6 +652,7 @@ function update(dt) {
 }
 
 function loop(now) {
+  if (CAPTURE) return; // capture.js drives frames itself
   requestAnimationFrame(loop);
   const dt = lastTime === null ? 0 : Math.min((now - lastTime) / 1000, MAX_DT);
   lastTime = now;
@@ -710,6 +724,7 @@ async function init() {
   if (bills.length) game.phase = 'ready';
   game.sourceLabel = { live: 'Live bills from congress.gov.', snapshot: `Real bills from congress.gov, updated ${fetched}.`, local: 'Sample bills (made up).' }[source];
   setBills(bills, source, fetched);
+  if (CAPTURE) (await import('./capture.js')).start(debug, CAPTURE);
 }
 
 init().catch((err) => {
@@ -719,4 +734,13 @@ init().catch((err) => {
 });
 
 // Read-only handles for the headless test harness; unused by the page itself.
-export const debug = { game, camera, startRound, enterGame, leaveGame, world: () => world, capitol: () => capitol };
+export const debug = {
+  game, camera, canvas, startRound, enterGame, leaveGame, setView, showDocket, resize,
+  views: { GAME_VIEW, HERO_VIEW },
+  world: () => world,
+  capitol: () => capitol,
+  frame(dt) { // one deterministic step, used by capture.js
+    update(dt);
+    renderer.render(scene, camera);
+  },
+};

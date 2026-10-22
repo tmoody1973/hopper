@@ -89,6 +89,27 @@ curl -s -o /dev/null -w '%{http_code}\n' https://hopper-rouge.vercel.app/.env.lo
 
 `.vercelignore` keeps `.env*`, `scripts/`, `docs/`, all `*.md` files and `.remember/` off Vercel. Check the 404 after every deploy.
 
+## Launch video
+
+`video/` is a Remotion project that cuts a 30-second launch video from the real game, in 16:9 (YouTube) and 9:16 (Reels / Shorts).
+
+```bash
+cd video
+npm install
+npx playwright install chromium          # once
+node scripts/record.mjs hero play dome docket audio   # records the game (~12 min)
+npx remotion studio                       # preview
+npx remotion render Launch16x9 out/hopper-launch-16x9.mp4
+npx remotion render Launch9x16 out/hopper-launch-9x16.mp4
+```
+
+How the footage is made:
+1. `/?capture=<scene>` puts the game in recording mode: a seeded RNG, no real-time loop, and a scripted cursor (`capture.js`).
+2. The recorder steps it one frame at a time in headless Chrome and pipes the frames to FFmpeg.
+3. Each scene also writes an event log (launch, grab, drop), which the edit uses to sync cuts and sound.
+
+All audio comes from the game's own synthesizer recipes, rendered offline: no music or sound files to license. Re-record whenever the game changes. Remotion is free for individuals and teams of up to 3; larger organisations need a [company license](https://www.remotion.pro/license).
+
 ## Project Structure
 
 ```
@@ -103,10 +124,12 @@ hopper/
 ├── textures.js         # Canvas-painted textures and the bill title cards
 ├── audio.js            # Synthesized sound effects and mute
 ├── page.js             # "Try one bill" quiz, bin cards, rule numbers on the page
+├── capture.js          # ?capture recording mode for the launch video (loaded only then)
 ├── learn.js            # Bill cards for the Docket and quiz: plain line, journey, sponsor
 ├── bills.json          # Bill snapshot the game plays
 ├── scripts/
 │   └── refresh-bills.mjs   # Downloads real bills into bills.json
+├── video/              # Remotion launch video + gameplay recorder (not deployed)
 ├── lib/                # three.js r170 + its MIT licence (LICENSE-three.txt)
 ├── fonts/              # Self-hosted woff2 files + their OFL licences (OFL-*.txt)
 ├── LICENSE             # MIT
