@@ -113,6 +113,58 @@ async function collect(key, previous, maxDetails) {
   return { byArea, checked, stopReason };
 }
 
+// ─── "Learn more" details: CRS summary, sponsor, status ────────────────────
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', mdash: '—', ndash: '–', rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“', sect: '§' };
+
+// CRS summaries are HTML. Keep the words, drop the markup and the bolded title paragraph.
+export function cleanSummary(html) {
+  const paras = String(html)
+    .replace(/^\s*<p>\s*(<strong>[\s\S]*?<\/strong>\s*)+<\/p>/i, '')
+    .replace(/<\/(p|li|h\d)>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (m, e) => (e[0] === '#'
+      ? String.fromCodePoint(e[1].toLowerCase() === 'x' ? parseInt(e.slice(2), 16) : Number(e.slice(1)))
+      : ENTITIES[e.toLowerCase()] ?? m))
+    .split(/\n{2,}/)
+    .map((p) => p.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+  const text = paras.join('\n\n');
+  return text.length > 2400 ? `${text.slice(0, 2400).replace(/\s+\S*$/, '')}…` : text;
+}
+
+async function latestSummary(bill, key) {
+  const data = await fetchJson(`${API}/bill/${bill.congress}/${bill.type.toLowerCase()}/${bill.number}/summaries?format=json&api_key=${encodeURIComponent(key)}`);
+  const list = Array.isArray(data?.summaries) ? data.summaries : [];
+  const latest = list.reduce((a, b) => (String(b.updateDate) > String(a?.updateDate ?? '') ? b : a), null);
+  return latest ? { summary: cleanSummary(latest.text) || null, summaryOf: latest.actionDesc ?? null } : { summary: null, summaryOf: null };
+}
+
+// Refreshes status and summary for every kept bill (bills move through Congress, so this runs each time).
+async function enrich(bills, key) {
+  const out = [];
+  let withSummary = 0;
+  for (let i = 0; i < bills.length; i += BATCH) {
+    const batch = await Promise.all(bills.slice(i, i + BATCH).map(async (bill) => {
+      try {
+        const detail = await retryOnce(() => fetchBillDetail(bill, key, bill.congress)).catch(skipMissing);
+        const about = await retryOnce(() => latestSummary(bill, key)).catch(skipMissing);
+        return { ...bill, ...(detail ? { ...detail, title: bill.title, policyArea: bill.policyArea } : {}), ...(about ?? {}) };
+      } catch (err) {
+        if (/HTTP 429/.test(err.message)) throw err;
+        return bill; // keep the bill as it was; a later run can fill in its details
+      }
+    }));
+    for (const bill of batch) {
+      if (bill.summary) withSummary++;
+      out.push(bill);
+    }
+    process.stdout.write(`\rDetails ${out.length}/${bills.length} · ${withSummary} with a CRS summary`);
+  }
+  process.stdout.write('\n');
+  return out;
+}
+
 async function main() {
   const key = readKey();
   if (!key) {
@@ -132,11 +184,17 @@ async function main() {
     console.error(`Only ${bills.length} usable bills after checking ${checked}; need ${MIN_LIVE_BILLS}. bills.json left unchanged.`);
     process.exit(1);
   }
-  writeFileSync(out, `[\n${bills.map((b) => `  ${JSON.stringify(b)}`).join(',\n')}\n]\n`);
-  console.log(`Wrote ${bills.length} real bills to ${out} (checked ${checked}).`);
+  let final = bills;
+  try {
+    final = await enrich(bills, key);
+  } catch (err) {
+    console.log(`Details stopped early: ${redact(err.message, key)}. Bills are saved; rerun later to fill in details.`);
+  }
+  writeFileSync(out, `[\n${final.map((b) => `  ${JSON.stringify(b)}`).join(',\n')}\n]\n`);
+  console.log(`Wrote ${final.length} real bills to ${out} (checked ${checked}).`);
 }
 
-main().catch((err) => {
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) main().catch((err) => {
   console.error(`refresh-bills failed: ${err.message}`);
   process.exit(1);
 });

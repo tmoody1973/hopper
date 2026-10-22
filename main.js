@@ -6,6 +6,7 @@ import { BIN, buildWorld, addWrongMarker, clearBin, flash } from './world.js';
 import { buildCapitol } from './capitol.js';
 import { sfx, unlock, isMuted, setMuted } from './audio.js';
 import { initPage, setBills } from './page.js';
+import { billCard } from './learn.js';
 
 // ─── Config ────────────────────────────────────────────────────────────────
 const CONFIG = {
@@ -83,6 +84,7 @@ const game = {
   spawnTimer: 0,
   side: 1,
   endTimer: null,
+  handled: [], // every bill the player sorted or missed this round, for the Docket
 };
 
 const cam = { from: { pos: GAME_VIEW.pos.clone(), look: GAME_VIEW.look.clone() }, to: GAME_VIEW, t: 1 };
@@ -243,6 +245,7 @@ function registerMiss(crate) {
   crate.anim = 0;
   game.misses++;
   game.streak = 0;
+  game.handled.push({ bill: crate.bill, verdict: 'missed' });
   sfx.plop();
   updateHud();
 }
@@ -255,7 +258,9 @@ function sortCrate(crate, bin) {
   crate.to = new THREE.Vector3(bin.x, 0.5, BIN.z);
 
   const actual = crate.bill.policyArea;
-  if (isCorrectSort(crate.bill, bin.area.name)) {
+  const right = isCorrectSort(crate.bill, bin.area.name);
+  game.handled.push({ bill: crate.bill, verdict: right ? 'right' : 'wrong', picked: bin.area.name });
+  if (right) {
     game.score++;
     sfx.correct(game.streak++);
     flash(bin, 'good');
@@ -314,6 +319,7 @@ function startRound() {
     wrongs: freshWrongs(),
     spawnTimer: FIRST_SPAWN_DELAY,
     endTimer: null,
+    handled: [],
   });
   sfx.gavel();
   updateHud();
@@ -514,9 +520,11 @@ function updateTitlePanel() {
   ui.title.replaceChildren(el('small', { textContent: label.toLowerCase() }), bill.title);
 }
 
-function showCard({ title, lines = [], stats = [], buttons = [], solid = false }) {
+function showCard({ title, lines = [], stats = [], buttons = [], solid = false, body = [], wide = false }) {
   ui.overlay.classList.toggle('solid', solid);
-  const children = [el('h2', { textContent: title }), ...lines.map((text) => el('p', { textContent: text }))];
+  ui.card.classList.toggle('wide', wide);
+  const heading = el('h2', { textContent: title, tabIndex: -1 });
+  const children = [heading, ...lines.map((text) => el('p', { textContent: text }))];
   if (stats.length) {
     children.push(el('div', { className: 'big' }, stats.map(([label, value]) => el('div', {}, [el('b', { textContent: String(value) }), label]))));
   }
@@ -526,9 +534,11 @@ function showCard({ title, lines = [], stats = [], buttons = [], solid = false }
     return btn;
   });
   if (btns.length) children.push(el('div', { className: 'cta' }, btns));
+  children.push(...body);
   ui.card.replaceChildren(...children);
   ui.overlay.classList.remove('hidden');
-  btns[0]?.focus();
+  ui.card.scrollTop = 0;
+  if (wide) heading.focus(); else btns[0]?.focus();
 }
 
 function hideCard() {
@@ -545,8 +555,44 @@ function showEndCard(won) {
     stats: [['sorted', game.score], ['missed', game.misses]],
     buttons: [
       { label: 'Play again', kind: 'play', onClick: () => { sfx.click(); startRound(); } },
+      ...(game.handled.length ? [{ label: `See your ${game.handled.length} bills`, kind: 'ghost', onClick: () => showDocket(won) }] : []),
       { label: 'Back to the page', kind: 'ghost', onClick: leaveGame },
     ],
+  });
+}
+
+// The Docket: every bill from the round, mistakes first, each one expandable
+// into what it would do, where it is now and who's behind it.
+const DOCKET_GROUPS = [
+  ['wrong', 'Wrong bin', 'Here is what these bills actually do.'],
+  ['missed', 'Landed on the lawn', ''],
+  ['right', 'Sorted right', ''],
+];
+
+function showDocket(won) {
+  const body = [];
+  let opened = false;
+  for (const [verdict, heading, note] of DOCKET_GROUPS) {
+    const records = game.handled.filter((r) => r.verdict === verdict);
+    if (records.length === 0) continue;
+    body.push(el('h3', { className: 'docket-head', textContent: `${heading} · ${records.length}` }));
+    if (note) body.push(el('p', { className: 'docket-note', textContent: note }));
+    body.push(el('div', { className: 'docket-list' }, records.map((r) => {
+      const card = billCard(r, { open: !opened });
+      opened = true;
+      return card;
+    })));
+  }
+  showCard({
+    title: 'Your docket',
+    lines: [`${game.handled.length} bills this round. Open any bill to see what it would do and how far it has gotten.`],
+    buttons: [
+      { label: 'Play again', kind: 'play', onClick: () => { sfx.click(); startRound(); } },
+      { label: 'Back to results', kind: 'ghost', onClick: () => showEndCard(won) },
+      { label: 'Back to the page', kind: 'ghost', onClick: leaveGame },
+    ],
+    body,
+    wide: true,
   });
 }
 

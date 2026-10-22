@@ -246,3 +246,65 @@ body.playing #hud { display: block; }
   html { scroll-behavior: auto; }
   .logo span, .bigplay, .down .arrow { animation: none; }
 }
+
+/* ── Bill cards: the end-of-round Docket and the home page quiz ── */
+.card.wide { width: min(780px, 100%); max-height: min(88vh, 920px); overflow-y: auto; text-align: left; }
+.card.wide h2, .card.wide > p { text-align: left; }
+.card.wide h2:focus { outline: none; }
+.card.wide .cta { justify-content: flex-start; margin: 12px 0 4px; }
+.docket-head { margin: 28px 0 4px; font: 800 1.375rem/1.2 var(--display); }
+.docket-note { margin: 0 0 10px; color: var(--ink-soft); }
+.docket-list { display: grid; gap: 10px; }
+#quiz-learn:not(:empty) { margin-top: 18px; }
+
+.bill-card {
+  background: #fff; border: 2px solid color-mix(in srgb, var(--c) 45%, #fff); border-left-width: 8px;
+  border-radius: 16px; text-align: left;
+}
+.bill-card > summary { list-style: none; cursor: pointer; padding: 14px 18px; display: grid; gap: 4px; }
+.bill-card > summary::-webkit-details-marker { display: none; }
+.bill-card > summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; border-radius: 12px; }
+.bc-verdict { font: 800 var(--fs-card)/1.3 var(--body); }
+.bc-verdict.right { color: var(--good-ink); }
+.bc-verdict.wrong { color: var(--bad-ink); }
+.bc-verdict.missed { color: var(--ink-soft); }
+.bc-id { font: 700 var(--fs-meta) var(--mono); color: var(--ink-soft); }
+.bc-title { font: 800 1.1875rem/1.35 var(--body); color: var(--ink); }
+.bc-more { justify-self: start; margin-top: 4px; font: 700 var(--fs-meta) var(--mono); color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.bc-more::after { content: " ▾"; }
+.bill-card[open] .bc-more::after { content: " ▴"; }
+.bc-body { padding: 2px 18px 18px; border-top: 1px dashed rgba(43, 37, 64, 0.18); }
+.bc-body h4 { margin: 16px 0 4px; font: 700 var(--fs-meta) var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+.bc-body p { margin: 0 0 6px; font-size: var(--fs-card); line-height: 1.55; max-width: 64ch; }
+.bc-body .bc-lead { font-size: var(--fs-body); }
+.bc-body .bc-source { font: 600 var(--fs-meta)/1.5 var(--mono); color: var(--ink-soft); }
+.bc-full > summary { cursor: pointer; margin: 2px 0 8px; font: 700 var(--fs-meta) var(--mono); color: var(--ink); }
+.bc-link { display: inline-block; margin-top: 10px; font-weight: 800; color: var(--ink); text-underline-offset: 3px; }
+
+/* The journey: dots along a road, with a balloon where the bill is now. */
+.journey { display: flex; margin: 10px 0 12px; padding: 0; list-style: none; }
+.journey li {
+  flex: 1; position: relative; padding: 30px 2px 0; text-align: center;
+  font: 700 var(--fs-meta)/1.2 var(--body); color: var(--ink-soft);
+}
+.journey li::before {
+  content: ""; position: absolute; z-index: 1; top: 7px; left: 50%; width: 16px; height: 16px; margin-left: -8px;
+  border-radius: 50%; background: #fff; border: 3px solid rgba(43, 37, 64, 0.25); box-sizing: border-box;
+}
+.journey li::after { content: ""; position: absolute; z-index: 0; top: 13px; left: -50%; width: 100%; height: 4px; background: rgba(43, 37, 64, 0.14); }
+.journey li:first-child::after { display: none; }
+.journey li.done::before { background: var(--ink-soft); border-color: var(--ink-soft); }
+.journey li.done::after, .journey li.now::after { background: var(--ink-soft); }
+.journey li.now { color: var(--ink); font-weight: 800; }
+.journey li.now::before {
+  top: -2px; width: 22px; height: 26px; margin-left: -11px; border-radius: 50% 50% 48% 48% / 46% 46% 54% 54%;
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.7) 0 16%, transparent 17%), var(--c);
+  border: 2px solid color-mix(in srgb, var(--c) 65%, #2b2540);
+}
+@media (max-width: 560px) {
+  .journey { flex-direction: column; gap: 8px; }
+  .journey li { padding: 2px 0 2px 34px; text-align: left; }
+  .journey li::before { top: 4px; left: 4px; margin-left: 0; }
+  .journey li.now::before { top: -2px; left: 1px; margin-left: 0; }
+  .journey li::after { top: -14px; left: 10px; width: 4px; height: 100%; }
+}

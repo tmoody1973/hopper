@@ -2,6 +2,7 @@
 // eight bin cards. Rule numbers come from rules.js, the same module the game uses.
 import { AREAS, WIN_SCORE, MAX_WRONG_PER_BIN, SPAWN_INTERVAL, billLabel, congressLabel, isCorrectSort } from './rules.js';
 import { shuffle } from './data.js';
+import { billCard } from './learn.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -54,6 +55,7 @@ function nextQuestion() {
   $('quiz-title').textContent = bill.title;
   $('quiz-result').textContent = '';
   $('quiz-result').className = 'quiz-result';
+  $('quiz-learn').replaceChildren();
   const chips = AREAS.map((area) => {
     const chip = el('button', { type: 'button', className: 'chip', textContent: area.name });
     chip.style.setProperty('--c', area.color);
@@ -75,6 +77,7 @@ function answer(bill, picked, chips) {
   result.textContent = right
     ? `Right. That's ${bill.policyArea}: green glow, one more ring on the dome.`
     : `Not quite. It's ${bill.policyArea}. In the game, that's a strike on ${picked}.`;
+  $('quiz-learn').replaceChildren(billCard({ bill }, { open: true }));
 }
 
 function renderBinCards(bills) {

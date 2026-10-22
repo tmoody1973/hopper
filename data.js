@@ -29,12 +29,27 @@ export async function fetchBillDetail(summary, key, congress = 119) {
   const number = String(summary?.number ?? '');
   if (!/^[a-z]+$/.test(type) || !/^\d+$/.test(number)) return null;
   const data = await fetchJson(`${API_BASE}/bill/${congress}/${type}/${number}?format=json&api_key=${encodeURIComponent(key)}`);
+  const bill = data?.bill ?? {};
+  const sponsor = bill.sponsors?.[0];
+  const law = Array.isArray(bill.laws) ? bill.laws[0] : null;
   return {
     congress,
     type: type.toUpperCase(),
     number,
-    title: String(data?.bill?.title ?? summary.title ?? '').trim(),
-    policyArea: data?.bill?.policyArea?.name ?? null,
+    title: String(bill.title ?? summary.title ?? '').trim(),
+    policyArea: bill.policyArea?.name ?? null,
+    // Used by the "learn more" bill cards.
+    sponsor: sponsor ? {
+      name: [sponsor.firstName, sponsor.lastName].filter(Boolean).join(' '),
+      role: String(sponsor.fullName ?? '').startsWith('Sen.') ? 'Sen.' : 'Rep.',
+      party: String(sponsor.party ?? ''),
+      state: String(sponsor.state ?? ''),
+    } : null,
+    cosponsors: Number(bill.cosponsors?.count ?? 0),
+    introduced: bill.introducedDate ?? null,
+    latestAction: bill.latestAction ? { date: bill.latestAction.actionDate, text: String(bill.latestAction.text ?? '') } : null,
+    law: law ? `${law.type} ${law.number}` : null,
+    url: String(bill.legislationUrl ?? '').startsWith('https://www.congress.gov/') ? bill.legislationUrl : null,
   };
 }
 
