@@ -9,3 +9,4 @@ node_modules/
 video/node_modules/
 video/out/
 video/public/capture/
+dist/
