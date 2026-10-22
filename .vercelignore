@@ -1,0 +1,9 @@
+# Never upload secrets or private notes. Everything listed here stays on this machine.
+.env
+.env.*
+!.env.example
+.remember/
+scripts/
+docs/
+*.md
+.DS_Store

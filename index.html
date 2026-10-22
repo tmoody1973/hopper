@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hopper · every bill needs a home</title>
+  <meta name="description" content="A 3D sorting game made of real bills from the 119th Congress. Each one floats out of the Capitol dome; drop it in the bin for its policy area before it lands.">
+  <meta property="og:title" content="Hopper">
+  <meta property="og:description" content="Congress is filing bills faster than anyone can read them. Every bill needs a home.">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238fc3ec'/%3E%3Cpath d='M14 50h36v-6H14z' fill='%23fffaf3'/%3E%3Cpath d='M18 44h28V36H18z' fill='%23fffaf3'/%3E%3Cpath d='M20 36a12 12 0 0 1 24 0z' fill='%23fffaf3'/%3E%3Crect x='30' y='14' width='4' height='10' fill='%232b2540'/%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/Baloo2-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+    { "imports": { "three": "./lib/three.module.js" } }
+  </script>
+</head>
+<body>
+  <section class="poster" id="top">
+    <canvas id="scene" aria-label="The Capitol on a floating island, launching bills on balloons"></canvas>
+    <div class="poster-ui">
+      <div>
+        <h1 class="logo"><span>Hopper</span></h1>
+        <p class="tag">Every bill needs a home.</p>
+      </div>
+      <div class="go">
+        <button class="bigplay" type="button" data-play disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l16 9-16 9z"/></svg>PLAY
+        </button>
+        <div class="meta">
+          <div id="play-note">loading bills… (stuck? serve this folder: python3 -m http.server)</div>
+          <div>free · no sign-up · a round takes 2–4 minutes</div>
+        </div>
+        <a class="down" href="#more">what is it? <span class="arrow" aria-hidden="true">↓</span></a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap" id="page">
+    <main id="more">
+      <div class="pitch-block">
+        <div class="kicker">built with claude · free in the browser · bills from congress.gov</div>
+        <p class="pitch">Congress files thousands of bills a session. Here each one floats out of the Capitol dome on a balloon, one every <span data-rule="spawn">5</span> seconds, and you drop it in the bin for its policy area before it lands.</p>
+        <div class="cta">
+          <button class="btn play" type="button" data-play disabled>Play in the browser</button>
+          <a class="btn ghost" href="#rule">Try one bill</a>
+        </div>
+        <div class="note">2–4 minute rounds · mouse or touch · esc to pause · sound you can mute</div>
+      </div>
+
+      <section id="rule">
+        <h2>Every bill has exactly one policy area</h2>
+        <p class="lede">Analysts at the Congressional Research Service read each bill and file it under one of 32 policy areas. Hopper uses <span data-rule="bins">8</span> of them. The title is the evidence. The crate's colour is only a hint.</p>
+        <div class="rules">
+          <div class="rule"><strong><span data-rule="win">25</span> right</strong><span>the dome is finished and Freedom goes on top</span></div>
+          <div class="rule"><strong><span data-rule="strikes">3</span> wrong in one bin</strong><span>gridlock: the round ends under a rain cloud</span></div>
+          <div class="rule"><strong>0 for a miss</strong><span>a bill that lands on the lawn is just gone</span></div>
+        </div>
+        <div class="quiz" aria-live="polite">
+          <div class="quiz-id" id="quiz-id">loading a bill…</div>
+          <p class="quiz-title" id="quiz-title"></p>
+          <div class="chips" id="quiz-chips"></div>
+          <div class="quiz-foot">
+            <div class="quiz-result" id="quiz-result"></div>
+            <button class="btn ghost" type="button" id="quiz-next">Another bill</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="how">
+        <h2>You don't choose the bill. You choose the bin.</h2>
+        <p class="lede">The Capitol launches the next bill every <span data-rule="spawn">5</span> seconds. Read the card above its balloon, or the full title along the bottom of the screen, then drag the crate to a bin.</p>
+        <div class="tools">
+          <div class="tool"><h3>Balloon</h3><small>every <span data-rule="spawn">5</span> s</small><span class="what">carries one bill down from the dome</span></div>
+          <div class="tool"><h3>Title card</h3><small>up to 4 lines</small><span class="what">the full title also sits at the bottom of the screen</span></div>
+          <div class="tool"><h3>Crate colour</h3><small>a hint</small><span class="what">leans toward its bin's colour, never the whole answer</span></div>
+          <div class="tool"><h3>Green glow</h3><small>+1</small><span class="what">the balloon pops and the dome gains a ring</span></div>
+          <div class="tool"><h3>Red flash</h3><small>1 strike</small><span class="what">the right bin glows gold so you learn it</span></div>
+          <div class="tool"><h3>Streak</h3><small>resets on a miss or strike</small><span class="what">each right answer in a row rings a note higher</span></div>
+          <div class="tool"><h3>Gridlock</h3><small><span data-rule="strikes">3</span> strikes in one bin</small><span class="what">the round ends under a rain cloud</span></div>
+          <div class="tool"><h3>Statue of Freedom</h3><small><span data-rule="win">25</span> right</small><span class="what">lowers onto the finished dome, with fireworks</span></div>
+        </div>
+      </section>
+
+      <section id="bins-section">
+        <h2>Eight bins, one right answer each</h2>
+        <p class="lede">Each bin is a policy area from Congress.gov. The examples come from the bills loaded right now.</p>
+        <div class="bin-cards" id="bin-cards"></div>
+      </section>
+
+      <section id="log">
+        <h2>Build log</h2>
+        <p class="lede">Each entry is one working session with Claude. Line counts come from the files.</p>
+        <div class="log">
+          <div class="entry">
+            <div class="d">Day 1<small>oct 21</small></div>
+            <div>
+              <p>Empty folder to a playable sorter: eight bins, live bills from Congress.gov with a 40-bill sample fallback, drag and drop, win, lose and restart. A headless test played full rounds before anyone opened a browser.</p>
+              <div class="nums">~940 lines · 0 image files · 1 bug caught by the test before launch</div>
+            </div>
+          </div>
+          <div class="entry">
+            <div class="d">Day 2<small>oct 22</small></div>
+            <div>
+              <p>Hopper. The Mall becomes a floating island, the Capitol launches bills and builds its dome one ring per right answer, every sound is synthesized in code, and this page.</p>
+              <div class="nums">8 modules · 2,238 lines · 0 image files · 0 audio files</div>
+            </div>
+          </div>
+          <div class="entry next">
+            <div class="d">Day 3<small>next</small></div>
+            <div><p>Your playtest notes.</p></div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      bills from api.congress.gov · policy areas by the Congressional Research Service<br>
+      three.js r170 (MIT) · Baloo 2, Nunito and JetBrains Mono (SIL Open Font License)
+    </footer>
+  </div>
+
+  <div id="hud">
+    <div id="stats" class="panel">
+      <div class="stat"><b id="score">0</b><span>sorted / <span data-rule="win">25</span></span></div>
+      <div class="stat"><b id="misses">0</b><span>missed</span></div>
+      <div id="source"></div>
+    </div>
+    <ul id="bins" class="panel" aria-label="Wrong bills per bin"></ul>
+    <div id="title" class="panel" aria-live="polite"></div>
+    <div id="toast" class="panel" role="status" aria-live="assertive"></div>
+    <div class="hud-buttons">
+      <button id="pause" type="button" aria-keyshortcuts="Escape P">pause</button>
+      <button id="mute" type="button" aria-pressed="true">sound on</button>
+    </div>
+  </div>
+
+  <div id="overlay" class="hidden">
+    <div class="card" id="card"></div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

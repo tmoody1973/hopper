@@ -1,0 +1,14 @@
+{
+  "name": "hopper",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "refresh-bills": "node scripts/refresh-bills.mjs"
+  },
+  "license": "MIT",
+  "description": "Every bill needs a home. A 3D browser game made of real bills from the 119th Congress.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tmoody1973/hopper.git"
+  }
+}
