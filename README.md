@@ -118,6 +118,9 @@ Never put the key in `main.js`. `CONFIG.API_KEY` there would fetch bills live in
 - **Real bills:** a snapshot of 120 bills, 15 per bin, from the 119th Congress (the 118th fills any bin the 119th can't). Each card names its bill number and Congress. A made-up sample set is labelled "sample" if no snapshot exists.
 - **Capitol as game machine:** bills launch from the dome, the dome grows a ring per correct sort, fireworks play at 25, and a rain cloud arrives on gridlock.
 - **Drag and drop:** mouse or touch, one crate at a time. The bin under the cursor highlights.
+- **Every card says what the bill does:** the title plus one plain line from the official CRS summary (or the official long title). Bills that can't explain themselves are left out of the deck.
+- **Late colour hint:** crates fall as plain wood and only blush their bin's colour near the ground, so reading is the faster way. The end card counts right answers made before the hint.
+- **Your Docket:** after each round, open every bill you handled (mistakes first) to see what it would do, where it is in Congress (a journey from introduced to law), who sponsored it, and a link to Congress.gov.
 - **Feedback:** the right bin glows green, a wrong bin flashes red, and a toast names the real policy area for 2 seconds while the right bin glows gold.
 - **Sound:** gavel, launch, pick-up, a streak that climbs in pitch, a wrong "bonk", a plop, a fanfare and the sad trombone. Mute with M or the button; the setting is remembered.
 - **Pause:** Esc, P or the button. Switching tabs or windows pauses too. The pause card hides the scene so titles can't be read ahead.

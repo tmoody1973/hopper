@@ -8,7 +8,11 @@ Paste this into every brief. Add a line whenever a playtest accepts a behaviour.
   bills → silent fallback to ./bills.json. Network failures never throw to the console.
 - Only bills in the 8 bin policy areas are used. The deck is shuffled and reshuffled when it runs out.
 - A bill launches from the Capitol dome every 5 s, then falls slowly under a balloon with its title card.
-- Crate size follows title length. Crate tint leans toward its bin's colour, but only as a hint.
+- Crate size follows title length. Crates fall as plain wood; the bin-colour hint fades in only over the last
+  third of the fall. Every falling card shows the title plus one plain line (CRS summary or official title).
+- refresh-bills drops any bill whose card can't say what it does (no summary, no official title, short title).
+- End of round: "See your N bills" opens the Docket (mistakes first) with what each bill would do, where it
+  is now, and who's behind it. The end card reports right answers made before the hint appeared.
 - Drag with mouse or touch (raycast + slanted drag plane). One drag at a time.
 - Each bin's drop zone is a flat panel in one shared plane: a pointer can only hit one bin.
 - Correct: bin glows green, +1, balloon pops, dome gains a ring. Wrong: bin flashes red, toast names the

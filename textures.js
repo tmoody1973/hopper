@@ -1,6 +1,7 @@
 // Every texture in the game, painted on a <canvas> at runtime. No image files.
 import * as THREE from 'three';
 import { billLabel, congressLabel } from './rules.js';
+import { teaser } from './learn.js';
 
 export const FONT = {
   display: '"Baloo 2", "Trebuchet MS", system-ui, sans-serif',
@@ -237,12 +238,18 @@ export function makeTitleSprite(bill, { sample }) {
   const PAD = 40;
   const SIZE = 64;
   const LINE = 76;
+  const SUB = 50; // the plain "what it does" line under the title
+  const SUB_LINE = 62;
+  const GAP = 12;
   const HEAD = 52;
   const LIP = 14;
   const [, probe] = makeCanvas(8, 8);
   probe.font = `800 ${SIZE}px ${FONT.body}`;
-  const lines = wrapText(probe, bill.title, W - PAD * 2, 4);
-  const H = PAD * 2 + HEAD + lines.length * LINE + LIP;
+  const about = sample ? null : teaser(bill);
+  const lines = wrapText(probe, bill.title, W - PAD * 2, about ? 2 : 4);
+  probe.font = `600 ${SUB}px ${FONT.body}`;
+  const subLines = about ? wrapText(probe, about, W - PAD * 2, 3) : [];
+  const H = PAD * 2 + HEAD + lines.length * LINE + (subLines.length ? GAP + subLines.length * SUB_LINE : 0) + LIP;
 
   const [c, g] = makeCanvas(W, H);
   lipCard(g, 2, 2, W - 4, H - LIP - 4, 36, '#d8c8b0', LIP);
@@ -254,6 +261,10 @@ export function makeTitleSprite(bill, { sample }) {
   g.fillStyle = INK;
   g.font = `800 ${SIZE}px ${FONT.body}`;
   lines.forEach((line, i) => g.fillText(line, PAD, PAD + HEAD + i * LINE + (LINE - SIZE) / 2));
+  g.fillStyle = INK_SOFT;
+  g.font = `600 ${SUB}px ${FONT.body}`;
+  const subTop = PAD + HEAD + lines.length * LINE + GAP;
+  subLines.forEach((line, i) => g.fillText(line, PAD, subTop + i * SUB_LINE + (SUB_LINE - SUB) / 2));
 
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: toTexture(c), depthTest: false, transparent: true }));
   const width = 7.4;

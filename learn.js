@@ -63,6 +63,16 @@ export function sponsorLine(bill) {
   return n ? `${who}, with ${n} cosponsor${n === 1 ? '' : 's'}` : `${who}, with no cosponsors yet`;
 }
 
+// The one plain line shown under a falling bill's title: the CRS summary's first
+// sentence ("This bill expands..." becomes "Expands..."), or the official long title.
+export function teaser(bill) {
+  if (bill.summary) {
+    const lead = firstSentence(bill.summary).replace(/^This (bill|act|joint resolution|concurrent resolution|resolution) /i, '');
+    return lead.charAt(0).toUpperCase() + lead.slice(1);
+  }
+  return bill.officialTitle ?? null;
+}
+
 export function firstSentence(text) {
   const para = String(text ?? '').split('\n\n')[0];
   const match = para.match(/^.+?[.!?](?=\s+[A-Z(]|$)/);

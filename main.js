@@ -6,7 +6,7 @@ import { BIN, buildWorld, addWrongMarker, clearBin, flash } from './world.js';
 import { buildCapitol } from './capitol.js';
 import { sfx, unlock, isMuted, setMuted } from './audio.js';
 import { initPage, setBills } from './page.js';
-import { billCard } from './learn.js';
+import { billCard, teaser } from './learn.js';
 
 // ─── Config ────────────────────────────────────────────────────────────────
 const CONFIG = {
@@ -23,6 +23,8 @@ const TOAST_MS = 2000;
 const END_SCREEN_DELAY_MS = 1600; // long enough for the fanfare or the trombone
 const FIRST_SPAWN_DELAY = 1.4; // let the camera settle and the gavel land
 const CRATE_TINT = 0.32; // how far crate wood leans toward its policy colour (the subtle hint)
+const HINT_START = 2 / 3; // the hint only fades in over the last third of the fall, so reading is faster
+const WOOD = new THREE.Color('#ffffff');
 const DRAG_FOLLOW = 18;
 const LAUNCH_TIME = 0.9;
 const SORT_TIME = 0.45;
@@ -146,7 +148,7 @@ function spawnCrate() {
   const tint = new THREE.Color('#ffffff').lerp(new THREE.Color(AREA_BY_NAME.get(bill.policyArea).color), CRATE_TINT);
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(size.w, size.h, size.d),
-    new THREE.MeshLambertMaterial({ map: crateTexture, color: tint }),
+    new THREE.MeshLambertMaterial({ map: crateTexture, color: WOOD }),
   );
   mesh.castShadow = mesh.receiveShadow = true;
   mesh.rotation.y = rand(-0.4, 0.4);
@@ -173,6 +175,9 @@ function spawnCrate() {
     target: to.clone(),
     anim: 0,
     seed: rand(0, 10),
+    tint,
+    hint: 0, // 0 = plain wood, 1 = full hint colour
+    hintAtGrab: 0,
   };
   mesh.userData.crate = crate;
   sprite.userData.crate = crate;
@@ -212,6 +217,10 @@ function updateCrate(crate, dt, speed) {
   } else if (crate.state === 'falling') {
     if (game.phase !== 'playing') return;
     pos.y -= speed * dt;
+    const ground = crate.size.h / 2;
+    const fallen = (SPAWN.y - pos.y) / (SPAWN.y - ground);
+    crate.hint = THREE.MathUtils.clamp((fallen - HINT_START) / (1 - HINT_START), 0, 1);
+    crate.mesh.material.color.copy(WOOD).lerp(crate.tint, crate.hint);
     crate.mesh.rotation.y += 0.2 * dt;
     crate.group.rotation.z = Math.sin(elapsed * 1.3 + crate.seed) * 0.04;
     if (pos.y - crate.size.h / 2 <= 0) {
@@ -259,7 +268,7 @@ function sortCrate(crate, bin) {
 
   const actual = crate.bill.policyArea;
   const right = isCorrectSort(crate.bill, bin.area.name);
-  game.handled.push({ bill: crate.bill, verdict: right ? 'right' : 'wrong', picked: bin.area.name });
+  game.handled.push({ bill: crate.bill, verdict: right ? 'right' : 'wrong', picked: bin.area.name, beforeHint: crate.hintAtGrab < 0.05 });
   if (right) {
     game.score++;
     sfx.correct(game.streak++);
@@ -413,6 +422,7 @@ function onPointerDown(e) {
   if (!crate) return;
   e.preventDefault();
   dragging = crate;
+  crate.hintAtGrab = crate.hint;
   crate.state = 'dragging';
   crate.mesh.rotation.y = 0;
   updateDragTarget();
@@ -517,7 +527,8 @@ function updateTitlePanel() {
   if (!focus) return;
   const { bill } = focus.crate;
   const label = `${focus.verb} · ${game.source === 'local' ? 'sample bill · ' : ''}${billLabel(bill)} · ${congressLabel(bill)}`;
-  ui.title.replaceChildren(el('small', { textContent: label.toLowerCase() }), bill.title);
+  const about = game.source === 'local' ? null : teaser(bill);
+  ui.title.replaceChildren(el('small', { textContent: label.toLowerCase() }), el('b', { textContent: bill.title }), about ? ` · ${about}` : '');
 }
 
 function showCard({ title, lines = [], stats = [], buttons = [], solid = false, body = [], wide = false }) {
@@ -552,7 +563,7 @@ function showEndCard(won) {
     lines: [won
       ? `${WIN_SCORE} bills sorted. Freedom is back on top of the Capitol.`
       : `One bin collected ${MAX_WRONG_PER_BIN} wrong bills. Nothing moves until the next session.`],
-    stats: [['sorted', game.score], ['missed', game.misses]],
+    stats: [['sorted', game.score], ['missed', game.misses], ['read before the hint', readBeforeHint()]],
     buttons: [
       { label: 'Play again', kind: 'play', onClick: () => { sfx.click(); startRound(); } },
       ...(game.handled.length ? [{ label: `See your ${game.handled.length} bills`, kind: 'ghost', onClick: () => showDocket(won) }] : []),
@@ -568,6 +579,11 @@ const DOCKET_GROUPS = [
   ['missed', 'Landed on the lawn', ''],
   ['right', 'Sorted right', ''],
 ];
+
+// Right answers made before the crate showed any colour: the sign people are reading.
+function readBeforeHint() {
+  return game.handled.filter((r) => r.verdict === 'right' && r.beforeHint).length;
+}
 
 function showDocket(won) {
   const body = [];
@@ -585,7 +601,10 @@ function showDocket(won) {
   }
   showCard({
     title: 'Your docket',
-    lines: [`${game.handled.length} bills this round. Open any bill to see what it would do and how far it has gotten.`],
+    lines: [
+      `${game.handled.length} bills this round. ${readBeforeHint()} of your ${game.score} right answers came before the colour hint showed up.`,
+      'Open any bill to see what it would do and how far it has gotten.',
+    ],
     buttons: [
       { label: 'Play again', kind: 'play', onClick: () => { sfx.click(); startRound(); } },
       { label: 'Back to results', kind: 'ghost', onClick: () => showEndCard(won) },

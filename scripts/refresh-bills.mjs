@@ -140,6 +140,17 @@ async function latestSummary(bill, key) {
   return latest ? { summary: cleanSummary(latest.text) || null, summaryOf: latest.actionDesc ?? null } : { summary: null, summaryOf: null };
 }
 
+// For bills with no summary: the official long title ("To amend ... to ...") says what they do.
+async function officialTitle(bill, key) {
+  const data = await fetchJson(`${API}/bill/${bill.congress}/${bill.type.toLowerCase()}/${bill.number}/titles?format=json&api_key=${encodeURIComponent(key)}`);
+  const found = (Array.isArray(data?.titles) ? data.titles : []).find((t) => /^Official Title/i.test(String(t.titleType)));
+  const text = String(found?.title ?? '').replace(/,? and for other purposes\.?$/i, '.').trim();
+  return text && text !== bill.title ? text : null;
+}
+
+// A card must say what the bill does: a summary, an official title, or a long descriptive title.
+export const explainsItself = (b) => Boolean(b.summary || b.officialTitle || String(b.title).split(/\s+/).length >= 8);
+
 // Refreshes status and summary for every kept bill (bills move through Congress, so this runs each time).
 async function enrich(bills, key) {
   const out = [];
@@ -149,7 +160,8 @@ async function enrich(bills, key) {
       try {
         const detail = await retryOnce(() => fetchBillDetail(bill, key, bill.congress)).catch(skipMissing);
         const about = await retryOnce(() => latestSummary(bill, key)).catch(skipMissing);
-        return { ...bill, ...(detail ? { ...detail, title: bill.title, policyArea: bill.policyArea } : {}), ...(about ?? {}) };
+        const official = about?.summary ? null : await retryOnce(() => officialTitle(bill, key)).catch(skipMissing);
+        return { ...bill, ...(detail ? { ...detail, title: bill.title, policyArea: bill.policyArea } : {}), ...(about ?? {}), officialTitle: official ?? null };
       } catch (err) {
         if (/HTTP 429/.test(err.message)) throw err;
         return bill; // keep the bill as it was; a later run can fill in its details
@@ -189,6 +201,11 @@ async function main() {
     final = await enrich(bills, key);
   } catch (err) {
     console.log(`Details stopped early: ${redact(err.message, key)}. Bills are saved; rerun later to fill in details.`);
+  }
+  const dropped = final.filter((b) => !explainsItself(b));
+  if (dropped.length) {
+    console.log(`Dropped ${dropped.length} bills whose card couldn't say what they do: ${dropped.map((b) => b.title).join(' · ')}`);
+    final = final.filter(explainsItself);
   }
   writeFileSync(out, `[\n${final.map((b) => `  ${JSON.stringify(b)}`).join(',\n')}\n]\n`);
   console.log(`Wrote ${final.length} real bills to ${out} (checked ${checked}).`);
