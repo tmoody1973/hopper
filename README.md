@@ -2,7 +2,7 @@
 
 > Every bill needs a home. A 3D browser game made of real bills from the 119th Congress.
 
-**Play:** https://hopper-rouge.vercel.app · **Source:** https://github.com/tmoody1973/hopper · **License:** MIT
+**Play:** https://thehoppergame.com · **Source:** https://github.com/tmoody1973/hopper · **License:** MIT
 
 ## Overview
 
@@ -84,7 +84,7 @@ A run with a full deck costs about 250 requests (two or three per kept bill). Op
 ```bash
 npm run refresh-bills   # optional: newer bills
 vercel deploy --prod
-curl -s -o /dev/null -w '%{http_code}\n' https://hopper-rouge.vercel.app/.env.local   # must print 404
+curl -s -o /dev/null -w '%{http_code}\n' https://thehoppergame.com/.env.local   # must print 404
 ```
 
 `.vercelignore` keeps `.env*`, `scripts/`, `docs/`, all `*.md` files and `.remember/` off Vercel. Check the 404 after every deploy.

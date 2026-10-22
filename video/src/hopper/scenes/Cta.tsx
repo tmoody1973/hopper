@@ -3,7 +3,7 @@ import { AbsoluteFill } from "remotion";
 import { C, FONT } from "../theme";
 import { Chip, Clip, Headline, Logo, Sky, useLayout } from "../ui";
 
-export const PLAY_URL = "hopper-rouge.vercel.app";
+export const PLAY_URL = "thehoppergame.com";
 
 // 08 · Call to action.
 export const Cta: React.FC = () => {
