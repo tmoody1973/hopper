@@ -68,7 +68,7 @@ export const ThumbStat: React.FC = () => {
         <Headline from={SETTLED} size={u * (portrait ? 24 : 19)} style={{ fontVariantNumeric: "tabular-nums" }}>
           {BILL_COUNT.toLocaleString("en-US")}
         </Headline>
-        <Headline from={SETTLED} size={u * (portrait ? 9 : 6.5)}>bills this Congress</Headline>
+        <Headline from={SETTLED} size={u * (portrait ? 9 : 6.5)}>bills &amp; resolutions this Congress</Headline>
         <Chip from={SETTLED} tone="coin" size={u * (portrait ? 6.4 : 4.6)} style={{ marginTop: u * 2.4 }}>
           Most never leave committee.
         </Chip>
