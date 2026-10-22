@@ -1,6 +1,6 @@
 // The home page around the game: PLAY buttons, the "try one bill" toy and the
 // eight bin cards. Rule numbers come from rules.js, the same module the game uses.
-import { AREAS, WIN_SCORE, MAX_WRONG_PER_BIN, SPAWN_INTERVAL, billLabel, isCorrectSort } from './rules.js';
+import { AREAS, WIN_SCORE, MAX_WRONG_PER_BIN, SPAWN_INTERVAL, billLabel, congressLabel, isCorrectSort } from './rules.js';
 import { shuffle } from './data.js';
 
 const $ = (id) => document.getElementById(id);
@@ -50,7 +50,7 @@ export function setBills(bills, source, fetched) {
 function nextQuestion() {
   if (quizDeck.length === 0) return;
   const bill = quizDeck[quizIndex++ % quizDeck.length];
-  $('quiz-id').textContent = `${sampleSource ? 'sample bill · ' : ''}${billLabel(bill)}`.toLowerCase();
+  $('quiz-id').textContent = `${sampleSource ? 'sample bill · ' : ''}${billLabel(bill)} · ${congressLabel(bill)}`.toLowerCase();
   $('quiz-title').textContent = bill.title;
   $('quiz-result').textContent = '';
   $('quiz-result').className = 'quiz-result';

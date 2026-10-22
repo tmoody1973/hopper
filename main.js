@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { AREA_BY_NAME, AREAS, WIN_SCORE, MAX_WRONG_PER_BIN, SPAWN_INTERVAL, billLabel, isCorrectSort } from './rules.js';
+import { AREA_BY_NAME, AREAS, WIN_SCORE, MAX_WRONG_PER_BIN, SPAWN_INTERVAL, billLabel, congressLabel, isCorrectSort } from './rules.js';
 import { loadBills, shuffle } from './data.js';
 import { FONT, makeCrateTexture, makeTitleSprite, setMaxAnisotropy, rand } from './textures.js';
 import { BIN, buildWorld, addWrongMarker, clearBin, flash } from './world.js';
@@ -504,13 +504,13 @@ function focusCrate() {
 
 function updateTitlePanel() {
   const focus = game.phase === 'playing' ? focusCrate() : null;
-  const key = focus ? `${focus.verb}|${billLabel(focus.crate.bill)}` : '';
+  const key = focus ? `${focus.verb}|${focus.crate.bill.congress}|${billLabel(focus.crate.bill)}` : '';
   if (key === titleKey) return;
   titleKey = key;
   ui.title.classList.toggle('show', Boolean(focus));
   if (!focus) return;
   const { bill } = focus.crate;
-  const label = `${focus.verb} · ${game.source === 'local' ? 'sample bill · ' : ''}${billLabel(bill)}`;
+  const label = `${focus.verb} · ${game.source === 'local' ? 'sample bill · ' : ''}${billLabel(bill)} · ${congressLabel(bill)}`;
   ui.title.replaceChildren(el('small', { textContent: label.toLowerCase() }), bill.title);
 }
 

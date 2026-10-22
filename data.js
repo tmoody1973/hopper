@@ -24,13 +24,13 @@ export async function fetchJson(url) {
   return res.json();
 }
 
-export async function fetchBillDetail(summary, key) {
+export async function fetchBillDetail(summary, key, congress = 119) {
   const type = String(summary?.type ?? '').toLowerCase();
   const number = String(summary?.number ?? '');
   if (!/^[a-z]+$/.test(type) || !/^\d+$/.test(number)) return null;
-  const data = await fetchJson(`${API_BASE}/bill/119/${type}/${number}?format=json&api_key=${encodeURIComponent(key)}`);
+  const data = await fetchJson(`${API_BASE}/bill/${congress}/${type}/${number}?format=json&api_key=${encodeURIComponent(key)}`);
   return {
-    congress: 119,
+    congress,
     type: type.toUpperCase(),
     number,
     title: String(data?.bill?.title ?? summary.title ?? '').trim(),

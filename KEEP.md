@@ -25,6 +25,7 @@ Paste this into every brief. Add a line whenever a playtest accepts a behaviour.
   and a bottom bar (full bill title, pause, sound). Clouds stay outside the island. A title card is fully
   on screen within ~1 s of its bill starting to fall, and all 8 bins stay in view, from 900 px wide up.
 - Readable at 1280×720. Nothing that carries information under 15px; all text ≥ 4.5:1 contrast.
+- bills.json: up to 15 real bills per bin, 119th Congress first, 118th only to fill gaps; cards show the Congress.
 - The API key lives only in .env.local (git- and vercel-ignored). scripts/refresh-bills.mjs writes real bills
   into bills.json; the page labels them real, and labels the made-up set as sample.
 - Deploys: .vercelignore keeps .env*, scripts/, docs/, *.md and .remember/ off Vercel. After every deploy,

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Downloads real 119th-Congress bills into bills.json, so the API key stays on
+// Downloads real bills into bills.json (119th Congress first, 118th only for bins the
+// 119th can't fill), so the API key stays on
 // this machine and visitors never call the API.
 //
 // Setup once: copy .env.example to .env.local and paste your free key from
@@ -17,7 +18,8 @@ import { fetchJson, fetchBillDetail } from '../data.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const API = 'https://api.congress.gov/v3';
-const PER_AREA = 8; // up to 8 bills per bin, so no bin floods the deck
+const PER_AREA = 15; // up to 15 bills per bin (120 total), so no bin floods the deck
+const CONGRESSES = [119, 118]; // newest first; older ones only fill what's still missing
 const PAGE = 100; // big pages are slow (250 can pass the 8 s timeout); 100 takes ~3 s
 const BATCH = 5; // detail requests in flight at once
 const DEFAULT_MAX = 2000; // bills to inspect per run (one request each). New bills often have no
@@ -37,7 +39,7 @@ function arg(name, fallback) {
   return i > -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
-const billKey = (b) => `${b.type}-${b.number}`;
+const billKey = (b) => `${b.congress}-${String(b.type).toUpperCase()}-${b.number}`;
 
 // Real bills from a previous run, so reruns top up instead of starting over.
 function previousRealBills(file) {
@@ -84,19 +86,25 @@ async function collect(key, previous, maxDetails) {
   let stopReason = null;
 
   try {
-    for (let offset = 0; !full() && checked < maxDetails; offset += PAGE) {
-      const list = await retryOnce(() => fetchJson(`${API}/bill/119?limit=${PAGE}&offset=${offset}&format=json&api_key=${encodeURIComponent(key)}`));
-      const all = Array.isArray(list?.bills) ? list.bills : [];
-      if (all.length === 0) break;
-      const summaries = all.filter((s) => !seen.has(`${String(s?.type).toUpperCase()}-${s?.number}`));
-      for (let i = 0; i < summaries.length && !full() && checked < maxDetails; i += BATCH) {
-        const batch = summaries.slice(i, i + BATCH);
-        checked += batch.length;
-        for (const bill of await Promise.all(batch.map((s) => retryOnce(() => fetchBillDetail(s, key)).catch(skipMissing)))) {
-          if (isUsableBill(bill)) keep({ ...bill, source: 'congress.gov', fetched });
+    for (const congress of CONGRESSES) {
+      let checkedHere = 0; // each Congress gets its own budget of maxDetails
+      for (let offset = 0; !full() && checkedHere < maxDetails; offset += PAGE) {
+        const list = await retryOnce(() => fetchJson(`${API}/bill/${congress}?limit=${PAGE}&offset=${offset}&format=json&api_key=${encodeURIComponent(key)}`));
+        const all = Array.isArray(list?.bills) ? list.bills : [];
+        if (all.length === 0) break;
+        const summaries = all.filter((s) => !seen.has(billKey({ congress, type: s?.type, number: s?.number })));
+        for (let i = 0; i < summaries.length && !full() && checkedHere < maxDetails; i += BATCH) {
+          const batch = summaries.slice(i, i + BATCH);
+          checked += batch.length;
+          checkedHere += batch.length;
+          for (const bill of await Promise.all(batch.map((s) => retryOnce(() => fetchBillDetail(s, key, congress)).catch(skipMissing)))) {
+            if (isUsableBill(bill)) keep({ ...bill, source: 'congress.gov', fetched });
+          }
+          process.stdout.write(`\r${congress}th Congress · ${checked} bills checked · ${kept()} kept`);
         }
-        process.stdout.write(`\r${checked} bills checked · ${kept()} kept`);
       }
+      if (full()) break;
+      process.stdout.write('\n');
     }
   } catch (err) {
     stopReason = redact(err.message, key); // usually a rate limit (HTTP 429); keep what we have

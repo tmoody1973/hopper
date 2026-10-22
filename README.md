@@ -61,9 +61,9 @@ npm run refresh-bills
 ```
 
 The script works in three steps:
-1. It reads the 119th-Congress bill list.
+1. It reads the 119th-Congress bill list, and the 118th only for bins the 119th can't fill.
 2. It looks up each bill's policy area.
-3. It keeps up to 8 bills per bin, merged with the real bills already in `bills.json`.
+3. It keeps up to 15 bills per bin (120 total), merged with the real bills already in `bills.json`.
 
 The page then shows "real bills from congress.gov · updated <date>".
 
@@ -115,7 +115,7 @@ Never put the key in `main.js`. `CONFIG.API_KEY` there would fetch bills live in
 
 ## Features
 
-- **Real bills:** a snapshot of 119th-Congress bills, 8 per bin, each labelled with its bill number. A made-up sample set is labelled "sample" if no snapshot exists.
+- **Real bills:** a snapshot of 120 bills, 15 per bin, from the 119th Congress (the 118th fills any bin the 119th can't). Each card names its bill number and Congress. A made-up sample set is labelled "sample" if no snapshot exists.
 - **Capitol as game machine:** bills launch from the dome, the dome grows a ring per correct sort, fireworks play at 25, and a rain cloud arrives on gridlock.
 - **Drag and drop:** mouse or touch, one crate at a time. The bin under the cursor highlights.
 - **Feedback:** the right bin glows green, a wrong bin flashes red, and a toast names the real policy area for 2 seconds while the right bin glows gold.

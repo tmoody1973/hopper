@@ -1,6 +1,6 @@
 // Every texture in the game, painted on a <canvas> at runtime. No image files.
 import * as THREE from 'three';
-import { billLabel } from './rules.js';
+import { billLabel, congressLabel } from './rules.js';
 
 export const FONT = {
   display: '"Baloo 2", "Trebuchet MS", system-ui, sans-serif',
@@ -249,7 +249,7 @@ export function makeTitleSprite(bill, { sample }) {
   g.textBaseline = 'top';
   g.fillStyle = INK_SOFT;
   g.font = `700 ${HEAD - 18}px ${FONT.mono}`;
-  const header = sample ? `sample bill · ${billLabel(bill)}` : `${billLabel(bill)} · 119th congress`;
+  const header = sample ? `sample bill · ${billLabel(bill)}` : `${billLabel(bill)} · ${congressLabel(bill)}`;
   g.fillText(header.toLowerCase(), PAD, PAD);
   g.fillStyle = INK;
   g.font = `800 ${SIZE}px ${FONT.body}`;
