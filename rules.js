@@ -7,21 +7,21 @@ export const SPAWN_INTERVAL = 5; // seconds between bills
 export const MIN_LIVE_BILLS = 30;
 
 export const AREAS = [
-  { name: 'Health', color: '#ef7d8a', label: ['HEALTH'],
+  { name: 'Health', short: 'Health', color: '#ef7d8a', label: ['HEALTH'],
     covers: 'hospitals, Medicare, drug prices, public health' },
-  { name: 'Taxation', color: '#f2bd4f', label: ['TAXATION'],
+  { name: 'Taxation', short: 'Taxation', color: '#f2bd4f', label: ['TAXATION'],
     covers: 'tax credits, deductions, rates, the IRS' },
-  { name: 'Energy', color: '#f39a4b', label: ['ENERGY'],
+  { name: 'Energy', short: 'Energy', color: '#f39a4b', label: ['ENERGY'],
     covers: 'the power grid, oil and gas, nuclear, efficiency' },
-  { name: 'Education', color: '#6c9fe0', label: ['EDUCATION'],
+  { name: 'Education', short: 'Education', color: '#6c9fe0', label: ['EDUCATION'],
     covers: 'schools, teachers, student loans, Pell Grants' },
-  { name: 'Armed Forces and National Security', color: '#8f9d5c', label: ['ARMED FORCES', '& NATIONAL', 'SECURITY'],
+  { name: 'Armed Forces and National Security', short: 'Armed Forces', color: '#8f9d5c', label: ['ARMED FORCES', '& NATIONAL', 'SECURITY'],
     covers: 'the military, service members, veterans, homeland defense' },
-  { name: 'Environmental Protection', color: '#4fb3a9', label: ['ENVIRONMENTAL', 'PROTECTION'],
+  { name: 'Environmental Protection', short: 'Environment', color: '#4fb3a9', label: ['ENVIRONMENTAL', 'PROTECTION'],
     covers: 'clean air and water, pollution, cleanup' },
-  { name: 'Crime and Law Enforcement', color: '#9b7fd4', label: ['CRIME & LAW', 'ENFORCEMENT'],
+  { name: 'Crime and Law Enforcement', short: 'Crime & Law', color: '#9b7fd4', label: ['CRIME & LAW', 'ENFORCEMENT'],
     covers: 'policing, federal crimes, drug trafficking, prisons' },
-  { name: 'Government Operations and Politics', color: '#8c8fb0', label: ['GOVERNMENT', 'OPERATIONS', '& POLITICS'],
+  { name: 'Government Operations and Politics', short: 'Gov. Operations', color: '#8c8fb0', label: ['GOVERNMENT', 'OPERATIONS', '& POLITICS'],
     covers: 'federal agencies, elections, the Postal Service, the census' },
 ];
 export const AREA_BY_NAME = new Map(AREAS.map((a) => [a.name, a]));

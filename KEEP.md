@@ -21,6 +21,9 @@ Paste this into every brief. Add a line whenever a playtest accepts a behaviour.
 - Sound starts only after PLAY; M or the button mutes; the setting persists.
 - Esc, P or the pause button pauses; switching tabs or windows auto-pauses. The pause card is opaque so
   titles can't be read ahead, and nothing moves or spawns until Resume.
+- Nothing ever covers the 3D view during play: the HUD lives in a top bar (score, misses, feedback, strikes)
+  and a bottom bar (full bill title, pause, sound). Clouds stay outside the island. A title card is fully
+  on screen within ~1 s of its bill starting to fall, and all 8 bins stay in view, from 900 px wide up.
 - Readable at 1280×720. Nothing that carries information under 15px; all text ≥ 4.5:1 contrast.
 - The API key lives only in .env.local (git- and vercel-ignored). scripts/refresh-bills.mjs writes real bills
   into bills.json; the page labels them real, and labels the made-up set as sample.

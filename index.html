@@ -120,19 +120,23 @@
     </footer>
   </div>
 
+  <!-- The HUD sits in bars above and below the 3D view, never on top of it. -->
   <div id="hud">
-    <div id="stats" class="panel">
-      <div class="stat"><b id="score">0</b><span>sorted / <span data-rule="win">25</span></span></div>
-      <div class="stat"><b id="misses">0</b><span>missed</span></div>
-      <div id="source"></div>
-    </div>
-    <ul id="bins" class="panel" aria-label="Wrong bills per bin"></ul>
-    <div id="title" class="panel" aria-live="polite"></div>
-    <div id="toast" class="panel" role="status" aria-live="assertive"></div>
-    <div class="hud-buttons">
-      <button id="pause" type="button" aria-keyshortcuts="Escape P">pause</button>
-      <button id="mute" type="button" aria-pressed="true">sound on</button>
-    </div>
+    <header class="hud-bar hud-top">
+      <div id="stats">
+        <div class="stat"><b id="score">0</b><span>sorted / <span data-rule="win">25</span></span></div>
+        <div class="stat"><b id="misses">0</b><span>missed</span></div>
+      </div>
+      <div id="toast" role="status" aria-live="assertive"></div>
+      <ul id="bins" aria-label="Strikes per bin" hidden></ul>
+    </header>
+    <footer class="hud-bar hud-bottom">
+      <div id="title" aria-live="polite"></div>
+      <div class="hud-buttons">
+        <button id="pause" type="button" aria-keyshortcuts="Escape P">pause</button>
+        <button id="mute" type="button" aria-pressed="true">sound on</button>
+      </div>
+    </footer>
   </div>
 
   <div id="overlay" class="hidden">

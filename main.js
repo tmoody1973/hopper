@@ -32,7 +32,7 @@ const BASE_FOV = 50;
 const MIN_H_FOV = 80;
 
 // Bills fall either side of the dome so their title cards never hide it.
-const SPAWN = { y: 9, z: -2.5, xMin: 4.5, xMax: 8.5 };
+const SPAWN = { y: 6.8, z: -2.5, xMin: 4.1, xMax: 6.0 }; // low enough that the title card is fully on screen when the fall starts
 const GAME_VIEW = { pos: new THREE.Vector3(0, 11.5, 19), look: new THREE.Vector3(0, 3.6, 0) };
 const HERO_VIEW = { pos: new THREE.Vector3(0, 13, 31), look: new THREE.Vector3(0, 4.5, -5) };
 
@@ -40,7 +40,7 @@ const HERO_VIEW = { pos: new THREE.Vector3(0, 13, 31), look: new THREE.Vector3(0
 const $ = (id) => document.getElementById(id);
 const canvas = $('scene');
 const ui = {
-  score: $('score'), misses: $('misses'), source: $('source'), bins: $('bins'), title: $('title'),
+  score: $('score'), misses: $('misses'), bins: $('bins'), title: $('title'),
   toast: $('toast'), overlay: $('overlay'), card: $('card'), mute: $('mute'), pause: $('pause'), playNote: $('play-note'),
 };
 
@@ -71,6 +71,7 @@ const dragPlane = (() => {
 const game = {
   phase: 'loading', // loading | ready | playing | paused | over
   source: 'local',
+  sourceLabel: '',
   bills: [],
   deck: [],
   deckIndex: 0,
@@ -348,7 +349,7 @@ function pauseGame() {
   game.phase = 'paused';
   showCard({
     title: 'Paused',
-    lines: ['The bills are holding still, and their titles stay hidden until you come back.'],
+    lines: ['The bills are holding still, and their titles stay hidden until you come back.', game.sourceLabel],
     stats: [['sorted', game.score], ['missed', game.misses]],
     buttons: [
       { label: 'Resume', kind: 'play', onClick: resumeGame },
@@ -452,7 +453,7 @@ const binHudRows = new Map();
 function buildBinHud() {
   for (const area of AREAS) {
     const dots = Array.from({ length: MAX_WRONG_PER_BIN }, () => el('span', { className: 'dot' }));
-    const row = el('li', {}, [el('span', { textContent: area.name }), el('span', { className: 'dots' }, dots)]);
+    const row = el('li', { hidden: true }, [el('span', { textContent: area.short }), el('span', { className: 'dots' }, dots)]);
     ui.bins.append(row);
     binHudRows.set(area.name, { row, dots });
   }
@@ -461,11 +462,17 @@ function buildBinHud() {
 function updateHud() {
   ui.score.textContent = String(game.score);
   ui.misses.textContent = String(game.misses);
+  // Only bins with strikes are listed, so the panel stays small and out of the bills' way.
+  let anyStrikes = false;
   for (const [name, { row, dots }] of binHudRows) {
     const wrong = game.wrongs[name];
     dots.forEach((dot, i) => dot.classList.toggle('on', i < wrong));
     row.classList.toggle('danger', wrong >= MAX_WRONG_PER_BIN - 1);
+    row.hidden = wrong === 0;
+    row.setAttribute('aria-label', `${name}: ${wrong} of ${MAX_WRONG_PER_BIN} strikes`);
+    anyStrikes ||= wrong > 0;
   }
+  ui.bins.hidden = !anyStrikes;
 }
 
 function renderMuteButton() {
@@ -481,7 +488,7 @@ function toggleMute() {
 
 function toast(parts, kind) {
   ui.toast.replaceChildren(...parts);
-  ui.toast.className = `panel show ${kind}`;
+  ui.toast.className = `show ${kind}`;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => ui.toast.classList.remove('show'), TOAST_MS);
 }
@@ -636,7 +643,7 @@ async function init() {
   game.bills = bills;
   game.source = source;
   if (bills.length) game.phase = 'ready';
-  ui.source.textContent = { live: 'live bills · congress.gov', snapshot: `real bills · congress.gov · ${fetched}`, local: 'sample bills · made up' }[source];
+  game.sourceLabel = { live: 'Live bills from congress.gov.', snapshot: `Real bills from congress.gov, updated ${fetched}.`, local: 'Sample bills (made up).' }[source];
   setBills(bills, source, fetched);
 }
 

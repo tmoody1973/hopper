@@ -102,7 +102,8 @@ function addClouds(scene) {
       cloud.add(puff);
     }
     const side = i % 2 ? 1 : -1;
-    cloud.position.set(side * rand(30, 42), rand(-4, 6), rand(-34, 8));
+    // Clouds stay outside the island (radius 30) and drift front-to-back, never across the play area.
+    cloud.position.set(side * rand(38, 48), rand(-6, 3), rand(-40, 10));
     cloud.scale.setScalar(rand(1, 1.8));
     cloud.userData.speed = rand(0.15, 0.4);
     scene.add(cloud);
@@ -294,8 +295,8 @@ export function buildWorld(scene, camera) {
   const confettiPos = confetti.geometry.attributes.position;
   function update(dt, t) {
     for (const cloud of clouds) {
-      cloud.position.x += cloud.userData.speed * dt;
-      if (cloud.position.x > 46) cloud.position.x = -46;
+      cloud.position.z += cloud.userData.speed * dt;
+      if (cloud.position.z > 12) cloud.position.z = -42;
     }
     big[0].position.y = 9 + Math.sin(t * 0.5) * 0.6;
     big[1].position.y = 11 + Math.sin(t * 0.4 + 2) * 0.5;
