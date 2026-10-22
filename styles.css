@@ -141,6 +141,15 @@ h2 { margin: 0 0 14px; font: 800 clamp(2rem, 4.4vw, 3rem)/1.05 var(--display); t
 .tool small { display: block; margin: 4px 0 8px; font: 700 var(--fs-meta)/1.4 var(--mono); color: var(--ink-soft); }
 .tool .what { display: block; font-size: var(--fs-card); line-height: 1.5; }
 
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 0 0 36px; padding: 0; list-style: none; counter-reset: step; }
+.steps li { counter-increment: step; position: relative; background: var(--paper); border-radius: 18px; padding: 54px 20px 18px; box-shadow: var(--lip); }
+.steps li::before {
+  content: counter(step); position: absolute; top: 16px; left: 20px; width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--ink); color: var(--paper); font: 800 1.125rem/1 var(--display);
+}
+.steps h3 { margin: 0 0 6px; font: 800 1.375rem/1.2 var(--display); }
+.steps p { margin: 0; font-size: var(--fs-card); line-height: 1.5; }
+.tools-head { margin: 0 0 14px; font: 800 1.5rem/1.2 var(--display); }
 .bin-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
 .bin-card { background: var(--paper); border-radius: 18px; padding: 18px 20px; box-shadow: 0 3px 0 rgba(43, 37, 64, 0.08); }
 .bin-card .swatch { display: block; height: 10px; border-radius: 6px; background: var(--c); margin-bottom: 14px; }

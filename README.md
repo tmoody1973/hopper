@@ -6,15 +6,24 @@
 
 ## Overview
 
-Bills float out of a low-poly Capitol dome on balloons, one every 5 seconds. You read each title and drag the crate into the bin for its policy area before it lands. There are 8 bins: Health, Taxation, Energy, Education, Armed Forces and National Security, Environmental Protection, Crime and Law Enforcement, and Government Operations and Politics.
+Bills float out of a low-poly Capitol dome on balloons, one every 5 seconds. Each card shows the bill's title and one plain line about what it would do. You drag the crate into the bin for its policy area before it lands. There are 8 bins: Health, Taxation, Energy, Education, Armed Forces and National Security, Environmental Protection, Crime and Law Enforcement, and Government Operations and Politics.
 
 - **Win:** 25 correct sorts. The dome gains one ring per correct answer, and the Statue of Freedom goes on top at 25.
 - **Lose:** 3 wrong bills in any one bin ("gridlock").
 - **Miss:** a bill that lands unsorted just disappears. No penalty, no point.
 
-The policy areas are the ones the Congressional Research Service assigns on Congress.gov, exactly one per bill. Crate colour leans toward the right bin's colour, but only as a hint.
+The policy areas are the ones the Congressional Research Service assigns on Congress.gov, exactly one per bill. Crates blush their bin's colour only near the ground, so reading the card is the faster way. After each round, Your Docket explains every bill you handled.
 
-The same page is both the home page and the game. The first screen shows the live 3D scene behind a PLAY button. Below it are a "try one bill" quiz, how a round works, the eight bins, and a build log.
+The same page is both the home page and the game. The first screen shows the live 3D scene behind a PLAY button. Below it are a "try one bill" quiz, how to play, the eight bins, and a build log.
+
+## How to play
+
+1. **Read the card.** Each bill's card shows its title and one plain line about what it would do. The same line sits in the bar at the bottom of the screen.
+2. **Drag it to a bin.** Drop the crate on the bin for its policy area. Green means right. Red is a strike, and the right bin glows gold so you learn it.
+3. **Beat the colour.** Near the ground the crate blushes its bin's colour. Reading is faster, and the end card counts how often you sorted before the hint.
+4. **Open your docket.** 25 right finishes the dome; 3 strikes in one bin is gridlock. Then open every bill you handled to see what it would do, where it is in Congress, and who's behind it.
+
+Controls: mouse or touch to drag · Esc or P to pause · M to mute.
 
 ## Tech Stack
 
@@ -62,12 +71,13 @@ npm run refresh-bills
 
 The script works in three steps:
 1. It reads the 119th-Congress bill list, and the 118th only for bins the 119th can't fill.
-2. It looks up each bill's policy area.
-3. It keeps up to 15 bills per bin (120 total), merged with the real bills already in `bills.json`.
+2. It looks up each bill's policy area and keeps up to 15 bills per bin (120 total), merged with the real bills already in `bills.json`.
+3. For every kept bill, it saves the official CRS summary, sponsor, latest action and Congress.gov link. Bills with no summary get their official long title instead. Status is refreshed every run, because bills move.
+4. It drops any bill whose card couldn't say what it does (no summary, no official title, and a short title).
 
 The page then shows "real bills from congress.gov · updated <date>".
 
-Options: `--max 800` checks fewer bills (default 2,000; one API request each), and `--out file.json` writes somewhere else. If fewer than 30 usable bills come back, it leaves `bills.json` untouched.
+A run with a full deck costs about 250 requests (two or three per kept bill). Options: `--max 800` checks fewer new bills (default 2,000; one API request each), and `--out file.json` writes somewhere else. If fewer than 30 usable bills come back, it leaves `bills.json` untouched.
 
 ### Deploy
 
@@ -83,7 +93,7 @@ curl -s -o /dev/null -w '%{http_code}\n' https://hopper-rouge.vercel.app/.env.lo
 
 ```
 hopper/
-├── index.html          # Home page + game: poster, PLAY, #more sections, HUD, overlays
+├── index.html          # Home page + game: poster, PLAY, how to play, HUD bars, overlays
 ├── styles.css          # Type scale, palette, page and HUD layout
 ├── main.js             # Game loop, crates, drag-and-drop, grading, pause, camera, HUD
 ├── rules.js            # Rule numbers and the 8 policy areas, shared by the game and the page
@@ -93,6 +103,7 @@ hopper/
 ├── textures.js         # Canvas-painted textures and the bill title cards
 ├── audio.js            # Synthesized sound effects and mute
 ├── page.js             # "Try one bill" quiz, bin cards, rule numbers on the page
+├── learn.js            # Bill cards for the Docket and quiz: plain line, journey, sponsor
 ├── bills.json          # Bill snapshot the game plays
 ├── scripts/
 │   └── refresh-bills.mjs   # Downloads real bills into bills.json
@@ -121,7 +132,8 @@ Never put the key in `main.js`. `CONFIG.API_KEY` there would fetch bills live in
 - **Every card says what the bill does:** the title plus one plain line from the official CRS summary (or the official long title). Bills that can't explain themselves are left out of the deck.
 - **Late colour hint:** crates fall as plain wood and only blush their bin's colour near the ground, so reading is the faster way. The end card counts right answers made before the hint.
 - **Your Docket:** after each round, open every bill you handled (mistakes first) to see what it would do, where it is in Congress (a journey from introduced to law), who sponsored it, and a link to Congress.gov.
-- **Feedback:** the right bin glows green, a wrong bin flashes red, and a toast names the real policy area for 2 seconds while the right bin glows gold.
+- **Nothing covers the bills:** the HUD lives in a bar above and a bar below the 3D view (score, feedback and strikes on top; the bill's plain line, pause and sound below).
+- **Feedback:** the right bin glows green, a wrong bin flashes red, and the top bar names the real policy area for 2 seconds while the right bin glows gold.
 - **Sound:** gavel, launch, pick-up, a streak that climbs in pitch, a wrong "bonk", a plop, a fanfare and the sad trombone. Mute with M or the button; the setting is remembered.
 - **Pause:** Esc, P or the button. Switching tabs or windows pauses too. The pause card hides the scene so titles can't be read ahead.
 - **Readable and accessible:** 18px body text, nothing that carries information under 15px, rem sizing, and every text colour at least 4.5:1 contrast. It honours the reduced-motion setting, uses real headings, and has 44–48px touch targets.
@@ -140,6 +152,8 @@ Plain-English records of the main calls, each with the options, the cost, and a 
 3. [One page: the live game scene is the poster](docs/decisions/003-one-page-live-hero.md)
 4. [Every sound is synthesized in code](docs/decisions/004-synthesized-sound.md)
 5. [Fetch real bills on my machine, ship them as a file](docs/decisions/005-fetch-bills-on-my-machine.md)
+6. [Explain bills with official CRS summaries, not AI rewrites](docs/decisions/006-official-summaries-not-ai.md)
+7. [The colour hint arrives late](docs/decisions/007-late-colour-hint.md)
 
 ## Contributing
 

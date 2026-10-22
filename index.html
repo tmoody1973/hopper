@@ -46,7 +46,7 @@
           <button class="btn play" type="button" data-play disabled>Play in the browser</button>
           <a class="btn ghost" href="#rule">Try one bill</a>
         </div>
-        <div class="note">2–4 minute rounds · mouse or touch · esc to pause · sound you can mute</div>
+        <div class="note">2–4 minute rounds · mouse or touch · esc to pause · every bill explained after the round</div>
       </div>
 
       <section id="rule">
@@ -71,7 +71,14 @@
 
       <section id="how">
         <h2>You don't choose the bill. You choose the bin.</h2>
-        <p class="lede">The Capitol launches the next bill every <span data-rule="spawn">5</span> seconds. Read the card above its balloon, or the full title along the bottom of the screen, then drag the crate to a bin.</p>
+        <p class="lede">The Capitol launches the next bill every <span data-rule="spawn">5</span> seconds. Four steps, then the details.</p>
+        <ol class="steps">
+          <li><h3>Read the card</h3><p>Each bill's card shows its title and one plain line about what it would do. The same line sits in the bar at the bottom of the screen.</p></li>
+          <li><h3>Drag it to a bin</h3><p>Drop the crate on the bin for its policy area. Green means right. Red is a strike, and the right bin glows gold so you learn it.</p></li>
+          <li><h3>Beat the colour</h3><p>Near the ground the crate blushes its bin's colour. Reading is faster, and the end card counts how often you sorted before the hint.</p></li>
+          <li><h3>Open your docket</h3><p><span data-rule="win">25</span> right finishes the dome; <span data-rule="strikes">3</span> strikes in one bin is gridlock. Then open every bill you handled to see what it would do and how far it has gotten.</p></li>
+        </ol>
+        <h3 class="tools-head">Everything you'll see</h3>
         <div class="tools">
           <div class="tool"><h3>Balloon</h3><small>every <span data-rule="spawn">5</span> s</small><span class="what">carries one bill down from the dome</span></div>
           <div class="tool"><h3>Title card</h3><small>title + what it does</small><span class="what">one plain line from the official summary, repeated in the bottom bar</span></div>
@@ -80,6 +87,8 @@
           <div class="tool"><h3>Red flash</h3><small>1 strike</small><span class="what">the right bin glows gold so you learn it</span></div>
           <div class="tool"><h3>Streak</h3><small>resets on a miss or strike</small><span class="what">each right answer in a row rings a note higher</span></div>
           <div class="tool"><h3>Gridlock</h3><small><span data-rule="strikes">3</span> strikes in one bin</small><span class="what">the round ends under a rain cloud</span></div>
+          <div class="tool"><h3>Your docket</h3><small>after every round</small><span class="what">each bill you handled, mistakes first: what it would do, where it is in Congress, who's behind it</span></div>
+          <div class="tool"><h3>Pause</h3><small>esc, p or the button</small><span class="what">the scene hides while paused so nobody reads ahead; switching tabs pauses too</span></div>
           <div class="tool"><h3>Statue of Freedom</h3><small><span data-rule="win">25</span> right</small><span class="what">lowers onto the finished dome, with fireworks</span></div>
         </div>
       </section>
@@ -106,6 +115,13 @@
             <div>
               <p>Hopper. The Mall becomes a floating island, the Capitol launches bills and builds its dome one ring per right answer, every sound is synthesized in code, and this page.</p>
               <div class="nums">8 modules · 2,238 lines · 0 image files · 0 audio files</div>
+            </div>
+          </div>
+          <div class="entry">
+            <div class="d">Day 2<small>later</small></div>
+            <div>
+              <p>Real bills: 120 from Congress.gov, 15 per bin, with the 118th Congress as backup. The HUD moved into bars so nothing covers a bill. Pause. Every card now says what its bill would do, the colour hint arrives late, and Your Docket explains every bill after the round.</p>
+              <div class="nums">9 modules · 2,859 lines · 105 of 120 bills with an official summary · 0 AI-written bill summaries</div>
             </div>
           </div>
           <div class="entry next">
